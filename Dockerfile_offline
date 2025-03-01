@@ -1,0 +1,14 @@
+FROM ice1217/whisperx-docker-id
+
+# Define the required argument for the huggingface.co token used by Pyannote (diarization/speaker-recognition library)
+ARG HUGGING_FACE_TOKEN
+
+# Output argument value for debugging/inspecting
+RUN echo "Huggingface.co token: ${HUGGING_FACE_TOKEN}"
+
+# Ensure the required argument was supplied
+# (test -n "") Returns false if the string is zero length
+RUN test -n "$HUGGING_FACE_TOKEN" || (echo "HUGGING_FACE_TOKEN argument is required" && false)
+
+# Preload and cache the Pyannote models so that the image can run offline
+RUN python3 -c 'from pyannote.audio import Pipeline; pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1", use_auth_token="'${HUGGING_FACE_TOKEN}'")'
